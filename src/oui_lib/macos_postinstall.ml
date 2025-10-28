@@ -11,7 +11,12 @@
 let generate_postinstall_script ~app_name ~binary_name =
   Printf.sprintf {|#!/bin/bash
 mkdir -p /usr/local/bin
-ln -sf "/Applications/%s.app/Contents/MacOS/%s" "/usr/local/bin/%s"
+
+cat > "/usr/local/bin/%s" << 'WRAPPER_EOF'
+#!/bin/bash
+exec "/Applications/%s.app/Contents/MacOS/%s" "$@"
+WRAPPER_EOF
+chmod +x "/usr/local/bin/%s"
 
 if [ -d "/Applications/%s.app/Contents/Resources/man" ]; then
   mkdir -p /usr/local/share/man
@@ -27,7 +32,7 @@ if [ -d "/Applications/%s.app/Contents/Resources/man" ]; then
 fi
 exit 0
 |}
-    app_name binary_name binary_name app_name app_name
+    binary_name app_name binary_name binary_name app_name app_name
 
 let save_postinstall_script ~content ~scripts_dir =
   OpamFilename.mkdir scripts_dir;

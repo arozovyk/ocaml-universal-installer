@@ -379,6 +379,7 @@ let create_bundle ~global_state ~switch_state ~env ~tmp_dir conf conffile
      makeself_manpages = Installer_config.manpages_of_list manpages_paths;
      macos_bundle_id = None; (* TODO *)
      macos_manpages = None; (* TODO *)
+     macos_symlink_dirs = []; (* TODO *)
    })
 
 let with_opam_and_conf cli global_options conf f =
