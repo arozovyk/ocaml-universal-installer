@@ -11,7 +11,7 @@
 (** Generate postinstall script content for macOS .pkg installers.
 
     The postinstall script:
-    - Creates symlinks from the .app bundle binaries to /usr/local/bin
+    - Creates wrapper scripts from /usr/local/bin to the .app bundle binaries
     - Installs manpages from the .app bundle to /usr/local/share/man
 *)
 val generate_postinstall_script :
