@@ -29,3 +29,21 @@ jobs:
       - run: opam config report
       - run: opam install .
       - run: opam exec opam-oui --help
+
+      - name: Fetch alt-ergo artifacts from branch
+        run: |
+          git remote add arozovyk https://github.com/arozovyk/ocaml-universal-installer.git
+          git fetch arozovyk alt-ergo-mac-builds
+          git checkout arozovyk/alt-ergo-mac-builds -- ok alt-ergo-oui.json semantic_triggers.ae
+
+      - name: Build alt-ergo pkg
+        run: opam exec -- oui alt-ergo-oui.json ok
+
+      - name: Install alt-ergo pkg
+        run: sudo installer -pkg alt-ergo-dev.pkg -target /
+
+      - name: Verify alt-ergo installation
+        run: alt-ergo --version
+
+      - name: Test alt-ergo with semantic triggers
+        run: alt-ergo --inequalities-plugin fm-simplex -o smtlib2 semantic_triggers.ae
