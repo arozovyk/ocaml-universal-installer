@@ -63,6 +63,40 @@ let handle_dylibs bundle ~binary_dst =
       dylibs;
     Install_name_tool.relocate_to_executable_path binary_dst
 
+(** Generate install.conf content for macOS.
+    Uses /Library/Application Support for plugin paths. *)
+let generate_install_conf ~(installer_config : Installer_config.internal) =
+  let app_support_base =
+    Printf.sprintf "/Library/Application Support/%s" installer_config.name
+  in
+  let lines =
+    [ Printf.sprintf "version=%s" installer_config.version ]
+    @ (match installer_config.plugin_dirs with
+        | None -> []
+        | Some _pd ->
+          [ Printf.sprintf "plugins=%s/plugins" app_support_base
+          ; Printf.sprintf "lib=%s/lib" app_support_base
+          ])
+    @ (List.concat_map
+         (fun (p : Installer_config.plugin) ->
+            let var_prefix = Plugin_utils.app_var_prefix p.app_name in
+            let target_support =
+              Printf.sprintf "/Library/Application Support/%s" p.app_name
+            in
+            [ Printf.sprintf "%splugins=%s/plugins" var_prefix target_support
+            ; Printf.sprintf "%slib=%s/lib" var_prefix target_support
+            ])
+         installer_config.plugins)
+  in
+  String.concat "\n" lines ^ "\n"
+
+let write_install_conf bundle ~installer_config =
+  let content = generate_install_conf ~installer_config in
+  let install_conf_path = bundle.Macos_app_bundle.resources // "install.conf" in
+  OpamFilename.write install_conf_path content;
+  OpamConsole.msg "Created install.conf: %s\n"
+    (OpamFilename.to_string install_conf_path)
+
 (** Create the .pkg installer from the bundle *)
 let create_installer
     ~(installer_config : Installer_config.internal) ~bundle_dir installer =
@@ -111,6 +145,9 @@ let create_installer
           "Directory %s not found in Resources, skipping symlink"
           dir_name
     ) installer_config.macos_symlink_dirs;
+
+  (* Write install.conf for plugin support *)
+  write_install_conf bundle ~installer_config;
 
   (* Create postinstall script *)
   let scripts_dir = work_dir / "scripts" in
