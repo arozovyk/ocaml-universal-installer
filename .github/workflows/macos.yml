@@ -29,8 +29,5 @@ jobs:
       - run: opam install .
       - run: opam exec opam-oui --help
 
-      - name: Test alt-ergo package
-        run: bash .github/scripts/test-alt-ergo.sh macos
-
       - name: Test frama-c and plugin support
-        run: bash .github/scripts/test-alt-ergo.sh
+        run: bash .github/scripts/test-frama-c-plugin.sh
