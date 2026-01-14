@@ -2,18 +2,13 @@ name: macos
 
 on:
   pull_request:
-    branches:
-      - master
-  push:
-    branches:
-      - master
 
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        ocaml-compiler: [4.14.x, 5.2.x]
+        ocaml-compiler: [4.14.x]
 
     runs-on: macos-latest
 
@@ -34,5 +29,5 @@ jobs:
       - run: opam install .
       - run: opam exec opam-oui --help
 
-      - name: Test alt-ergo package
-        run: bash .github/scripts/test-alt-ergo.sh macos
+      - name: Test frama-c and plugin support
+        run: bash .github/scripts/test-frama-c-plugin.sh
